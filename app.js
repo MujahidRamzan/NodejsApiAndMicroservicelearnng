@@ -10,15 +10,15 @@ app.use(express.json());
 
 // Logic goes here
 // importing user context
-const User = require("./model/user");
+const User = require("./model/User");
 // car Model
-const Car = require("./model/car");
+const Car = require("./model/Car");
 
 // CREATE car
 app.post("/create-car", (req, res, next) => {
   try {
-    const { name, brand } = req.body;
-    if (!(name && brand)) {
+    const { name, brand, user_id } = req.body;
+    if (!(name && brand && user_id)) {
 
       res.status(400).send("All Field is Required")
     } else {
@@ -78,7 +78,7 @@ app
             if (error) {
               return next(error);
             } else {
-              res.json(data);
+              res.json({ status: '200', message: 'Sucess', data: data });
             }
           });
 
@@ -90,6 +90,38 @@ app
     }
 
   })
+
+//// get car specific  user //
+app
+  .route("/getUserCarByid")
+  // Get Single car 
+  .get((req, res) => {
+    try {
+
+      const { id } = req.query
+      if (!(id)) {
+        res.status(400).send("User Id Required ")
+      }
+      else {
+        Car.find(
+          { user_id: id }, (error, data) => {
+            if (error) {
+              return next(error);
+            } else {
+              res.json({ status: '200', message: 'Sucess', data: data });
+            }
+          });
+
+      }
+    } catch (err) {
+      console.log(err);
+
+
+    }
+
+  })
+
+
 
 /// update car ///
 app.route("/update-car").put((req, res, next) => {
@@ -110,7 +142,7 @@ app.route("/update-car").put((req, res, next) => {
             return next(error);
             console.log(error);
           } else {
-            res.json(data);
+            res.json({ status: '200', message: 'Updated Successfully', data: data });
             console.log("Car updated successfully !");
           }
         }
@@ -120,7 +152,7 @@ app.route("/update-car").put((req, res, next) => {
 
   } catch (err) {
 
-console.log(err);
+    console.log(err);
 
   }
 
@@ -128,6 +160,36 @@ console.log(err);
 
 
 
+});
+
+/// delete car by id//
+
+app.route("/delete-car").delete((req, res, next) => {
+  console.log(req.body)
+  try {
+    const { id } = req.query
+    if (!(id)) {
+      res.status(400).send("Car id Field is requird ")
+    } else {
+
+      Car.findByIdAndDelete(
+        id,
+        async (error, data) => {
+          if (error) {
+            return next(error);
+            console.log(error);
+          } else {
+            res.json({ status: '200', message: 'Successfully removed', data: data });
+            console.log("Car deleted successfully !");
+          }
+        }
+      );
+    }
+
+
+  } catch (err) {
+    console.log(err);
+  }
 });
 
 // Register
